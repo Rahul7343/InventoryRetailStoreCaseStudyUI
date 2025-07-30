@@ -1,0 +1,25 @@
+﻿@model List<InventoryUi.Models.SupplierModel>
+
+@foreach (var s in Model)
+{
+    <tr>
+        <td>@s.Name</td>
+        <td>@s.MobileNo</td>
+        <td>
+            <button class="btn btn-primary btn-sm editBtn"
+                    data-id="@s.Id"
+                    data-name="@s.Name"
+                    data-mobile="@s.MobileNo"
+                    data-createddate="@s.CreatedDate"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editSupplierModal">
+                Edit
+            </button>
+            <button class="btn btn-danger btn-sm deleteBtn"
+                    data-id="@s.Id"
+                    data-name="@s.Name">
+                Delete
+            </button>
+        </td>
+    </tr>
+}

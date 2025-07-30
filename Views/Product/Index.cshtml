@@ -1,0 +1,209 @@
+﻿@model List<InventoryUi.Models.ProductModel>
+
+@{
+    ViewData["Title"] = "Product List";
+}
+
+<h2>Product List</h2>
+
+<!-- Add Product Modal Button -->
+<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#createProductModal">
+    Add Product
+</button>
+
+<!-- Product Table -->
+<table id="ProductTable" class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Supplier</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @Html.Partial("_ProductList", Model)
+    </tbody>
+</table>
+
+<!-- Create Product Modal -->
+@Html.Partial("_Create", Model)
+
+<!--Edit Product Modal-->
+@Html.Partial("_Edit", Model)
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#createProductForm').submit(function (e) {
+                e.preventDefault();
+                var formData = {
+                    ProductName: $('[name="ProductName"]').val(),
+                    CategoryId: $('[name="CategoryId"]').val(),
+                    SupplierId: $('[name="SupplierId"]').val(),
+                    StocKQuantity: $('[name="StocKQuantity"]').val(),
+                    ProductPrice: $('[name="Price"]').val()
+                };
+
+                $.post('@Url.Action("CreateProduct", "Product")', formData)
+                    .done(function () {
+                        $('#createProductModal').modal('hide');
+                        $('#createProductForm')[0].reset();
+
+                        $.get('@Url.Action("GetProducts", "Product")', function (data) {
+                            $('#ProductTable tbody').html(data);
+                        });
+                    })
+                    .fail(function () {
+                        alert('Error while saving Product.');
+                    });
+            });
+        });
+
+        $(function () {
+                $(document).on('click', '.editBtn', function () {
+            const id = $(this).data('id');
+            const productname = $(this).data('productname');
+            const category = $(this).data('category');
+            const supplier = $(this).data('supplier');
+            const stockquantity = $(this).data('stockquantity');
+            const productprice = $(this).data('productprice');
+            const createdDate = $(this).data('createddate');
+
+            $('#editId').val(id);
+            $('#editProductName').val(productname);
+            // $('#editCategory').val(category);
+            // $('#editSupplier').val(supplier);
+            $('#editStocKQuantity').val(stockquantity);
+            $('#editPrice').val(productprice);
+            $('#editCreatedDate').val(createdDate);
+
+             // Load categories and pre-select
+        $.get('/Product/GetCategories', function (categories) {
+            const $cat = $('#editCategoryDropdown');
+            $cat.empty().append('<option value="">-- Select Category --</option>');
+            $.each(categories, function (i, cat) {
+                const selected = cat.id == category ? 'selected' : '';
+                $cat.append(`<option value="${cat.id}" ${selected}>${cat.categoryName}</option>`);
+            });
+        });
+
+                // Load suppliers and pre-select
+        $.get('/Product/GetSuppliers', function (suppliers) {
+                const $sup = $('#editSupplierDropdown');
+                $sup.empty().append('<option value="">-- Select Supplier --</option>');
+                $.each(suppliers, function (i, sup) {
+                    const selected = sup.id == supplier ? 'selected' : '';
+                    $sup.append(`<option value="${sup.id}" ${selected}>${sup.name}</option>`);
+                });
+            });
+
+        });
+                $('#editProductForm').submit(function (e) {
+            e.preventDefault();
+
+            const formData = {
+                Id: $('#editId').val(),
+                ProductName: $('#editProductName').val(),
+                CategoryId: $('#editCategoryDropdown').val(),
+                SupplierId: $('#editSupplierDropdown').val(),
+                StocKQuantity: $('#editStocKQuantity').val(),
+                ProductPrice: $('#editPrice').val(),
+                CreatedDate : $('#editCreatedDate').val()
+            };
+
+            $.post('@Url.Action("UpdateProduct", "Product")', formData)
+                .done(function () {
+                    $('#editProductModal').modal('hide');
+                    $('#editProductForm')[0].reset();
+
+                    $.get('@Url.Action("GetProducts", "Product")', function (data) {
+                        $('#ProductTable tbody').html(data);
+                    });
+                })
+                .fail(function () {
+                    alert('Error while updating Product.');
+                });
+        });
+        });
+
+        $(document).ready(function () {
+            let productId = null;
+
+            // On Delete button click, open modal and set id
+            $(document).on('click', '.deleteBtn', function () {
+                productId = $(this).data('id');
+                console.log("productId",productId);
+                const ProductName = $(this).data('productname');
+                $('#deleteProductName').text(ProductName);
+                $('#confirmDeleteModal').modal('show');
+            });
+
+            // Confirm Delete
+            $('#confirmDeleteBtn').click(function () {
+                if (productId) {
+                 $.ajax({
+                        url: '/Product/DeleteProduct',
+                        type: 'POST',
+                        data: { productId: productId },
+                        success: function () {
+                        $('#confirmDeleteModal').modal('hide');
+                        $.get('@Url.Action("GetProducts", "Product")', function (data) {
+                            $('#ProductTable tbody').html(data);
+                        });
+                        }
+                      });
+                }
+            });
+        });
+
+        //dropdown categories
+        $(document).ready(function () {
+            $('#createProductModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '/Product/GetCategories', // Your controller method
+                    type: 'GET',
+                    success: function (categories) {
+                        let dropdown = $('#CategoryDropdown');
+                        dropdown.empty();
+                        dropdown.append('<option value="">-- Select Category --</option>');
+
+                        $.each(categories, function (i, category) {
+                            dropdown.append(`<option value="${category.id}">${category.categoryName}</option>`);
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load categories.');
+                    }
+                });
+            });
+        });
+
+        // suppliers
+        $(document).ready(function () {
+            $('#createProductModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '/Product/GetSuppliers',
+                    type: 'GET',
+                    success: function (suppliers) {
+                        let dropdown = $('#SupplierDropdown');
+                        dropdown.empty();
+                        dropdown.append('<option value="">-- Select Supplier --</option>');
+
+                        $.each(suppliers, function (i, supplier) {
+                            dropdown.append(`<option value="${supplier.id}">${supplier.name}</option>`);
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load suppliers.');
+                    }
+                });
+            });
+        });
+
+        //////////////////////////
+           
+    </script>
+}

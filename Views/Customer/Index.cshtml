@@ -1,0 +1,134 @@
+﻿@model List<InventoryUi.Models.CustomerModel>
+
+@{
+    ViewData["Title"] = "Customer List";
+}
+
+<h2>Customer List</h2>
+
+<!-- Add Customer Modal Button -->
+<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#createCustomerModal">
+    Add Customer
+</button>
+
+<!-- Customer Table -->
+<table id="customerTable" class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Mobile No</th>
+            <th>Address</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @Html.Partial("_CustomerList", Model)
+    </tbody>
+</table>
+
+<!-- Create Customer Modal -->
+@Html.Partial("_Create", Model)
+
+<!--Edit Customer Modal-->
+@Html.Partial("_Edit", Model)
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#createCustomerForm').submit(function (e) {
+                e.preventDefault();
+                var formData = {
+                    Name: $('[name="Name"]').val(),
+                    MobileNo: $('[name="MobileNo"]').val(),
+                    Address: $('[name="Address"]').val()
+
+                };
+
+                $.post('@Url.Action("CreateCustomer", "Customer")', formData)
+                    .done(function () {
+                        $('#createCustomerModal').modal('hide');
+                        $('#createCustomerForm')[0].reset();
+
+                        $.get('@Url.Action("GetCustomers", "Customer")', function (data) {
+                            $('#customerTable tbody').html(data);
+                        });
+                    })
+                    .fail(function () {
+                        alert('Error while saving customer.');
+                    });
+            });
+        });
+
+        $(function () {
+                $(document).on('click', '.editBtn', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            const mobile = $(this).data('mobile');
+            const address = $(this).data('address');
+            const createdDate = $(this).data('createddate');
+
+            $('#editId').val(id);
+            $('#editName').val(name);
+            $('#editMobileNo').val(mobile);
+            $('#editAddress').val(address);
+            $('#editCreatedDate').val(createdDate);
+
+        });
+                $('#editCustomerForm').submit(function (e) {
+            e.preventDefault();
+
+            const formData = {
+                Id: $('#editId').val(),
+                Name: $('#editName').val(),
+                MobileNo: $('#editMobileNo').val(),
+                Address: $('#editAddress').val(),
+                CreatedDate : $('#editCreatedDate').val()
+            };
+
+            $.post('@Url.Action("UpdateCustomer", "Customer")', formData)
+                .done(function () {
+                    $('#editCustomerModal').modal('hide');
+                    $('#editCustomerForm')[0].reset();
+
+                    $.get('@Url.Action("GetCustomers", "Customer")', function (data) {
+                        $('#customerTable tbody').html(data);
+                    });
+                })
+                .fail(function () {
+                    alert('Error while updating customer.');
+                });
+        });
+        });
+
+        $(document).ready(function () {
+            let customerId = null;
+
+            // On Delete button click, open modal and set id
+            $(document).on('click', '.deleteBtn', function () {
+                customerId = $(this).data('id');
+                console.log("customerId",customerId);
+                const customerName = $(this).data('name');
+                $('#deleteCustomerName').text(customerName);
+                $('#confirmDeleteModal').modal('show');
+            });
+
+            // Confirm Delete
+            $('#confirmDeleteBtn').click(function () {
+                if (customerId) {
+                 $.ajax({
+                        url: '/Customer/DeleteCustomer',
+                        type: 'POST',
+                        data: { customerId: customerId }, 
+                        success: function () {
+                        $('#confirmDeleteModal').modal('hide');
+                        $.get('@Url.Action("GetCustomers", "Customer")', function (data) {
+                            $('#customerTable tbody').html(data);
+                        });
+                        }
+                      });
+                }
+            });
+        });
+
+    </script>
+}

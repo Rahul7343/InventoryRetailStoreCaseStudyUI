@@ -1,0 +1,39 @@
+﻿﻿
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<link href="/css/Login.css" rel="stylesheet" type="text/css" />
+<script src="~/lib/jquery/dist/jquery.js"></script>
+<script src="~/Js/Login.js"></script>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login</title>
+</head>
+<body>
+    <div class="login">
+        <form id="login" method="get">
+            <label>
+                <b>
+                    User Name
+                </b>
+            </label>
+            <input type="text" name="Uname" id="txtUsername" placeholder="Username">
+            <br><br><br>
+            <label>
+                <b>
+                    Password
+                </b>
+            </label>
+            &nbsp;&nbsp;<input type="Password" name="Pass" id="txtPassword" placeholder="Password">
+            <br><br>
+            <br><br>
+            <input type="button" name="log" id="btnLogin" value="Login">
+            <input type="button" name="log" id="btnCancel" value="Cancel">
+
+        </form>
+    </div>
+</body>
+</html>

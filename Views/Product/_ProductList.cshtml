@@ -1,0 +1,31 @@
+﻿@model List<InventoryUi.Models.ProductModel>
+
+@foreach (var s in Model)
+{
+    <tr>
+        <td>@s.ProductName</td>
+        <td>@s.Category?.CategoryName</td>
+        <td>@s.Supplier?.Name</td>
+        <td>@s.StockQuantity</td>
+        <td>@s.ProductPrice</td>
+        <td>
+            <button class="btn btn-primary btn-sm editBtn"
+                    data-id="@s.Id"
+                    data-productname="@s.ProductName"
+                    data-category="@s.CategoryId"
+                    data-supplier="@s.SupplierId"
+                    data-stockquantity="@s.StockQuantity"
+                    data-productprice="@s.ProductPrice"
+                    data-createddate="@s.CreatedDate"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editProductModal">
+                Edit
+            </button>
+            <button class="btn btn-danger btn-sm deleteBtn"
+                    data-id="@s.Id"
+                    data-name="@s.ProductName">
+                Delete
+            </button>
+        </td>
+    </tr>
+}

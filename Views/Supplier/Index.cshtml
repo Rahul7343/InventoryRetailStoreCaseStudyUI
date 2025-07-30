@@ -1,0 +1,132 @@
+﻿@model List<InventoryUi.Models.SupplierModel>
+
+@{
+    ViewData["Title"] = "Supplier List";
+}
+
+<h2>Supplier List</h2>
+
+<!-- Add Supplier Modal Button -->
+<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#createSupplierModal">
+    Add Supplier
+</button>
+
+<!-- Supplier Table -->
+<table id="supplierTable" class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Name</th>
+            <th>Mobile No</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @Html.Partial("_SupplierList", Model)
+    </tbody>
+</table>
+
+<!-- Create Supplier Modal -->
+@Html.Partial("_Create", Model)
+
+<!--Edit Supplier Modal-->
+@Html.Partial("_Edit", Model)
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#createSupplierForm').submit(function (e) {
+                e.preventDefault();
+                var formData = {
+                    Name: $('[name="Name"]').val(),
+                    MobileNo: $('[name="MobileNo"]').val()
+                };
+
+                $.post('@Url.Action("CreateSupplier", "Supplier")', formData)
+                    .done(function () {
+                        $('#createSupplierModal').modal('hide');
+                        $('#createSupplierForm')[0].reset();
+
+                        $.get('@Url.Action("GetSuppliers", "Supplier")', function (data) {
+                            $('#supplierTable tbody').html(data);
+                        });
+                    })
+                    .fail(function () {
+                        alert('Error while saving supplier.');
+                    });
+            });
+        });
+
+        $(function () {
+                $(document).on('click', '.editBtn', function () {
+            const id = $(this).data('id');
+            const name = $(this).data('name');
+            const mobile = $(this).data('mobile');
+            const createdDate = $(this).data('createddate');
+
+            $('#editId').val(id);
+            $('#editName').val(name);
+            $('#editMobileNo').val(mobile);
+            $('#editCreatedDate').val(createdDate);
+
+        });
+                $('#editSupplierForm').submit(function (e) {
+            e.preventDefault();
+
+            const formData = {
+                Id: $('#editId').val(),
+                Name: $('#editName').val(),
+                MobileNo: $('#editMobileNo').val(),
+                CreatedDate : $('#editCreatedDate').val()
+            };
+
+            $.post('@Url.Action("UpdateSupplier", "Supplier")', formData)
+                .done(function () {
+                    $('#editSupplierModal').modal('hide');
+                    $('#editSupplierForm')[0].reset();
+
+                    $.get('@Url.Action("GetSuppliers", "Supplier")', function (data) {
+                        $('#supplierTable tbody').html(data);
+                    });
+                })
+                .fail(function () {
+                    alert('Error while updating supplier.');
+                });
+        });
+        });
+
+        $(document).ready(function () {
+            let supplierId = null;
+
+            // On Delete button click, open modal and set id
+            $(document).on('click', '.deleteBtn', function () {
+                supplierId = $(this).data('id');
+                console.log("supplierId",supplierId);
+                const supplierName = $(this).data('name');
+                $('#deleteSupplierName').text(supplierName);
+                $('#confirmDeleteModal').modal('show');
+            });
+
+            // Confirm Delete
+            $('#confirmDeleteBtn').click(function () {
+                console.log("supplierIdOnConfirm",supplierId);
+                if (supplierId) {
+                                    $.ajax({
+            url: '/Supplier/DeleteSupplier',
+            type: 'POST',
+            data: { supplierId: supplierId }, // plain object
+            success: function () {
+                $('#confirmDeleteModal').modal('hide');
+                // 🔄 Refresh supplier list
+                $.get('@Url.Action("GetSuppliers", "Supplier")', function (data) {
+                    $('#supplierTable tbody').html(data);
+                });
+            }
+        });
+
+
+                }
+            });
+        });
+
+    </script>
+}

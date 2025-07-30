@@ -1,0 +1,44 @@
+﻿@model List<InventoryUi.Models.SalesModel>
+
+<div class="modal fade" id="createSalesModal" tabindex="-1" aria-labelledby="createSalesModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="createSalesForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Sales</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group mb-2">
+                        <label>Customer</label>
+                        <select name="CustomerId" id="CustomerDropdown" class="form-control" required>
+                            <option value="">-- Select Customer --</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Quantity</label>
+                        <input type="text" name="Quantity" class="form-control" required />
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Product</label>
+                        <select name="ProductId" id="ProductDropdown" class="form-control" required>
+                            <option value="">-- Select Product --</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Price</label>
+                        <input type="text" name="Price" id="Price" class="form-control" disabled required />
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Purchase Date</label>
+                        <input type="text" name="PurchaseDate" class="form-control datepicker" autocomplete="off" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

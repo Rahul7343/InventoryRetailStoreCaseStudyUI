@@ -1,0 +1,229 @@
+﻿@model List<InventoryUi.Models.SalesModel>
+
+@{
+    ViewData["Title"] = "Sales List";
+}
+
+<h2>Sales List</h2>
+
+<!-- Add Sales Modal Button -->
+<button class="btn btn-success mb-3" data-bs-toggle="modal" data-bs-target="#createSalesModal">
+    Add Sales
+</button>
+
+<!-- Sales Table -->
+<table id="SalesTable" class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Purchase Date</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @Html.Partial("_SalesList", Model)
+    </tbody>
+</table>
+
+<!-- Create Sales Modal -->
+@Html.Partial("_Create", Model)
+
+<!--Edit Sales Modal-->
+@Html.Partial("_Edit", Model)
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('#createSalesForm').submit(function (e) {
+                e.preventDefault();
+                var formData = {
+                    CustomerId: $('[name="CustomerId"]').val(),
+                    ProductId: $('[name="ProductId"]').val(),
+                    Quantity: $('[name="Quantity"]').val(),
+                    Price: $('[name="Price"]').val(),
+                    PurchaseDate: $('[name="PurchaseDate"]').val()
+                };
+
+                $.post('@Url.Action("CreateSale", "Sales")', formData)
+                    .done(function () {
+                        $('#createSalesModal').modal('hide');
+                        $('#createSalesForm')[0].reset();
+
+                        $.get('@Url.Action("GetSales", "Sales")', function (data) {
+                            $('#salesTable tbody').html(data);
+                        });
+                    })
+                    .fail(function () {
+                        alert('Error while saving Sales.');
+                    });
+            });
+        });
+
+        $(function () {
+                $(document).on('click', '.editBtn', function () {
+            const id = $(this).data('id');
+            const customer = $(this).data('customer');
+            const product = $(this).data('product');
+            const quantity = $(this).data('quantity');
+            const price = $(this).data('price');
+            const purchasedate = $(this).data('purchasedate');
+            const createdDate = $(this).data('createddate');
+
+            $('#editId').val(id);
+            $('#editQuantity').val(quantity);
+            $('#editPrice').val(price);
+            $('#editPurchaseDate').val(purchasedate);
+            $('#editCreatedDate').val(createdDate);
+
+            $.get('/Sales/GetCustomers', function (customers) {
+            const $cat = $('#editCustomerDropdown');
+            $cat.empty().append('<option value="">-- Select Customer --</option>');
+            $.each(customers, function (i, cust) {
+                const selected = cust.id == customer ? 'selected' : '';
+                $cat.append(`<option value="${cust.id}" ${selected}>${cust.name}</option>`);
+            });
+        });
+
+                // Load products and pre-select
+        $.get('/Sales/GetProducts', function (products) {
+                const $sup = $('#editProductDropdown');
+                $sup.empty().append('<option value="">-- Select Product --</option>');
+                $.each(products, function (i, prod) {
+                    const selected = prod.id == product ? 'selected' : '';
+                    $sup.append(`<option value="${prod.id}" ${selected}>${prod.productName}</option>`);
+                });
+            });
+
+        });
+                $('#editSalesForm').submit(function (e) {
+            e.preventDefault();
+
+            const formData = {
+                Id: $('#editId').val(),
+                Quantity: $('#editQuantity').val(),
+                CustomerId: $('#editCustomerDropdown').val(),
+                ProductId: $('#editProductDropdown').val(),
+                Price: $('#editPrice').val(),
+                PurchaseDate: $('#editPurchaseDate').val(),
+                CreatedDate : $('#editCreatedDate').val()
+            };
+
+            $.post('@Url.Action("UpdateSale", "Sales")', formData)
+                .done(function () {
+                    $('#editSalesModal').modal('hide');
+                    $('#editSalesForm')[0].reset();
+
+                    $.get('@Url.Action("GetSales", "Sales")', function (data) {
+                        $('#salesTable tbody').html(data);
+                    });
+                })
+                .fail(function () {
+                    alert('Error while updating Sales.');
+                });
+        });
+        });
+
+        $(document).ready(function () {
+            let saleId = null;
+
+            // On Delete button click, open modal and set id
+            $(document).on('click', '.deleteBtn', function () {
+                saleId = $(this).data('id');
+                console.log("saleId",saleId);
+                const saleName = $(this).data('name');
+                $('#deleteSalesName').text(saleName);
+                $('#confirmDeleteModal').modal('show');
+            });
+
+            // Confirm Delete
+            $('#confirmDeleteBtn').click(function () {
+                if (saleId) {
+                 $.ajax({
+                        url: '/Sales/DeleteSale',
+                        type: 'POST',
+                        data: { saleId: saleId },
+                        success: function () {
+                        $('#confirmDeleteModal').modal('hide');
+                        $.get('@Url.Action("GetSales", "Sales")', function (data) {
+                            $('#salesTable tbody').html(data);
+                        });
+                        }
+                      });
+                }
+            });
+        });
+        // drop down
+
+        //dropdown customer
+        $(document).ready(function () {
+            $('#createSalesModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '/Sales/GetCustomers',
+                    type: 'GET',
+                    success: function (customers) {
+                        let dropdown = $('#CustomerDropdown');
+                        dropdown.empty();
+                        dropdown.append('<option value="">-- Select Customer --</option>');
+
+                        $.each(customers, function (i, customer) {
+                            dropdown.append(`<option value="${customer.id}">${customer.name}</option>`);
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load customers.');
+                    }
+                });
+            });
+        });
+
+        // products
+        $(document).ready(function () {
+            $('#createSalesModal').on('show.bs.modal', function () {
+                $.ajax({
+                    url: '/Sales/GetProducts',
+                    type: 'GET',
+                    success: function (products) {
+                        let dropdown = $('#ProductDropdown');
+                        dropdown.empty();
+                        dropdown.append('<option value="">-- Select Product --</option>');
+
+                        $.each(products, function (i, product) {
+                            dropdown.append(`<option value="${product.id}">${product.productName}</option>`);
+                        });
+                    },
+                    error: function () {
+                        alert('Failed to load products.');
+                    }
+                });
+            });
+        });
+        // calculate price based on product selection
+        $('#ProductDropdown').change(function () {
+           var  productId= $('[name="ProductId"]').val();
+           var  quantity= $('[name="Quantity"]').val();
+            console.log("productId",productId);
+            console.log("quantity",quantity);
+            if (productId) {
+                $.get("/Sales/GetProductById", { productId: productId }, function (product) {
+                   console.log("welcome product",product.productPrice)
+                    $('#Price').val(product.productPrice * quantity);
+                });
+            } else {
+                $('#Price').val('');
+            }
+        });
+
+        // datepicker
+        $(document).ready(function () {
+            $('.datepicker').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+        });
+
+    </script>
+}

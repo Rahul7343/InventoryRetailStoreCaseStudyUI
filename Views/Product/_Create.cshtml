@@ -1,0 +1,43 @@
+﻿@model List<InventoryUi.Models.ProductModel>
+
+<div class="modal fade" id="createProductModal" tabindex="-1" aria-labelledby="createProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="createProductForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-2">
+                        <label>Product Name</label>
+                        <input type="text" name="ProductName" class="form-control" required />
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Category</label>
+                        <select name="CategoryId" id="CategoryDropdown" class="form-control" required>
+                            <option value="">-- Select Category --</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Supplier</label>
+                        <select name="SupplierId" id="SupplierDropdown" class="form-control" required>
+                            <option value="">-- Select Supplier --</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>StocK Quantity</label>
+                        <input type="text" name="StocKQuantity" class="form-control" required />
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Price</label>
+                        <input type="text" name="Price" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
