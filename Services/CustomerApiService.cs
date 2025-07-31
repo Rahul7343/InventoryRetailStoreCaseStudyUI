@@ -12,14 +12,16 @@ namespace InventoryUi.Services
     public class CustomerApiService
     {
         private readonly HttpClient _httpClient;
-
-        public CustomerApiService(IHttpClientFactory httpClientFactory)
+        private readonly AuthApiService _authToken;
+        public CustomerApiService(IHttpClientFactory httpClientFactory, AuthApiService authToken)
         {
             _httpClient = httpClientFactory.CreateClient("Inventory");
+            _authToken = authToken;
         }
 
         public async Task<List<CustomerModel>> GetAllCustomersAsync()
         {
+            await GetAuthToken();
             var response = await _httpClient.GetAsync("api/Customer/GetCustomers");
 
             if (response.IsSuccessStatusCode)
@@ -32,6 +34,7 @@ namespace InventoryUi.Services
         }
         public async Task<CustomerModel> GetCustomerAsync(long customerId)
         {
+            await GetAuthToken();
             string url = $"api/Customer/GetCustomer/{customerId}";
 
             var response = await _httpClient.GetAsync(url);
@@ -47,7 +50,7 @@ namespace InventoryUi.Services
         public async Task<bool> AddCustomerAsync(CustomerModel customerModel)
         {
             Customer customer = ToApiModel(customerModel);
-
+            await GetAuthToken();
             var jsonContent = new StringContent(
                 JsonConvert.SerializeObject(customer), Encoding.UTF8, "application/json");
             var json = JsonConvert.SerializeObject(customer);
@@ -58,7 +61,7 @@ namespace InventoryUi.Services
         public async Task<bool> UpdateCustomerAsync(CustomerModel customerModel)
         {
             Customer customer = ToApiModel(customerModel);
-
+            await GetAuthToken();
             var jsonContent = new StringContent(
                 JsonConvert.SerializeObject(customer), Encoding.UTF8, "application/json");
             var json = JsonConvert.SerializeObject(customer);
@@ -68,6 +71,7 @@ namespace InventoryUi.Services
         }
         public async Task<bool> DeleteCustomerAsync(long customerId)
         {
+            await GetAuthToken();
             string url = $"api/Customer/DeleteCustomer/{customerId}";
 
             var response = await _httpClient.DeleteAsync(url);
@@ -88,6 +92,15 @@ namespace InventoryUi.Services
             customer.CreatedDate = customerModel.CreatedDate;
             customer.ModifiedDate = DateTime.Now;
             return customer;
+        }
+        private async Task GetAuthToken()
+        {
+            var token = await _authToken.GetAuthTokenAsync();
+            AuthorizationTokenResponse oAuthorizationTokenResponse = JsonConvert.DeserializeObject<AuthorizationTokenResponse>(token);
+            if (!string.IsNullOrEmpty(oAuthorizationTokenResponse.token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", oAuthorizationTokenResponse.token);
+            }
         }
     }
 }

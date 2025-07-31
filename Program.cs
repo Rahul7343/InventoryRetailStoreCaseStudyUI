@@ -9,7 +9,7 @@ builder.Services.AddHttpClient("Inventory", client =>
     client.BaseAddress = new Uri("https://localhost:7220/"); // replace with your API base URL
 });
 
-
+builder.Services.AddScoped<AuthApiService>();
 builder.Services.AddScoped<SupplierApiService>();
 builder.Services.AddScoped<CustomerApiService>();
 builder.Services.AddScoped<ProductApiService>();

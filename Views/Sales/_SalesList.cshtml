@@ -3,11 +3,13 @@
 @foreach (var s in Model)
 {
     <tr>
+        <td>
+            @s.PurchaseDate.ToString("dd-MMM-yy")
+        </td>
         <td>@s.Customer?.Name</td>
         <td>@s.Product?.ProductName</td>
         <td>@s.Quantity</td>
         <td>@s.Price</td>
-        <td>@s.PurchaseDate</td>
         <td>
             <button class="btn btn-primary btn-sm editBtn"
                     data-id="@s.Id"
@@ -18,7 +20,7 @@
                     data-purchasedate="@s.PurchaseDate"
                     data-createddate="@s.CreatedDate"
                     data-bs-toggle="modal"
-                    data-bs-target="#editCustomerModal">
+                    data-bs-target="#editSalesModal">
                 Edit
             </button>
             <button class="btn btn-danger btn-sm deleteBtn"

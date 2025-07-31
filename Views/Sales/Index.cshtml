@@ -1,7 +1,7 @@
 ﻿@model List<InventoryUi.Models.SalesModel>
 
 @{
-    ViewData["Title"] = "Sales List";
+    ViewData["Title"] = "Manage Sales";
 }
 
 <h2>Sales List</h2>
@@ -15,11 +15,11 @@
 <table id="SalesTable" class="table table-bordered table-striped">
     <thead class="table-dark">
         <tr>
+            <th>Purchase Date</th>
             <th>Customer</th>
             <th>Product</th>
             <th>Quantity</th>
             <th>Price</th>
-            <th>Purchase Date</th>
             <th>Action</th>
         </tr>
     </thead>
@@ -53,7 +53,7 @@
                         $('#createSalesForm')[0].reset();
 
                         $.get('@Url.Action("GetSales", "Sales")', function (data) {
-                            $('#salesTable tbody').html(data);
+                            $('#SalesTable tbody').html(data);
                         });
                     })
                     .fail(function () {
@@ -85,10 +85,10 @@
                 const selected = cust.id == customer ? 'selected' : '';
                 $cat.append(`<option value="${cust.id}" ${selected}>${cust.name}</option>`);
             });
-        });
+            });
 
-                // Load products and pre-select
-        $.get('/Sales/GetProducts', function (products) {
+                //Load products and pre-select
+            $.get('/Sales/GetProducts', function (products) {
                 const $sup = $('#editProductDropdown');
                 $sup.empty().append('<option value="">-- Select Product --</option>');
                 $.each(products, function (i, prod) {
@@ -117,7 +117,7 @@
                     $('#editSalesForm')[0].reset();
 
                     $.get('@Url.Action("GetSales", "Sales")', function (data) {
-                        $('#salesTable tbody').html(data);
+                        $('#SalesTable tbody').html(data);
                     });
                 })
                 .fail(function () {
@@ -148,7 +148,7 @@
                         success: function () {
                         $('#confirmDeleteModal').modal('hide');
                         $.get('@Url.Action("GetSales", "Sales")', function (data) {
-                            $('#salesTable tbody').html(data);
+                            $('#SalesTable tbody').html(data);
                         });
                         }
                       });
@@ -204,12 +204,23 @@
         $('#ProductDropdown').change(function () {
            var  productId= $('[name="ProductId"]').val();
            var  quantity= $('[name="Quantity"]').val();
+           var  userdiscount= $('[name="Discount"]').val();
+           var  productPrice= $('[name="ProductPrice"]').val();
+
+
             console.log("productId",productId);
             console.log("quantity",quantity);
             if (productId) {
                 $.get("/Sales/GetProductById", { productId: productId }, function (product) {
                    console.log("welcome product",product.productPrice)
-                    $('#Price').val(product.productPrice * quantity);
+                           const total = product.productPrice * quantity;
+                            const discount = Math.min(Math.max(userdiscount, 0), total);
+                            const tax = (total - discount) * 0.12;
+                            const final = total - discount + tax;
+                    $('#Tax').val(tax);
+                    $('#ProductPrice').val(product.productPrice * quantity);
+                    $('#Price').val(final);
+
                 });
             } else {
                 $('#Price').val('');

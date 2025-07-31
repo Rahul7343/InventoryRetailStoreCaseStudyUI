@@ -12,14 +12,16 @@ namespace InventoryUi.Services
     public class SalesApiService
     {
         private readonly HttpClient _httpClient;
-
-        public SalesApiService(IHttpClientFactory httpClientFactory)
+        private readonly AuthApiService _authToken;
+        public SalesApiService(IHttpClientFactory httpClientFactory, AuthApiService authToken)
         {
             _httpClient = httpClientFactory.CreateClient("Inventory");
+            _authToken = authToken;
         }
 
         public async Task<List<SalesModel>> GetAllSalesAsync()
         {
+            await GetAuthToken();
             var response = await _httpClient.GetAsync("api/Sales/GetSales");
 
             if (response.IsSuccessStatusCode)
@@ -32,6 +34,7 @@ namespace InventoryUi.Services
         }
         public async Task<SalesModel> GetSaleAsync(long saleId)
         {
+            await GetAuthToken();
             string url = $"api/Sales/GetSale/{saleId}";
 
             var response = await _httpClient.GetAsync(url);
@@ -47,7 +50,7 @@ namespace InventoryUi.Services
         public async Task<bool> AddSaleAsync(SalesModel saleModel)
         {
             Sales sale = ToApiModel(saleModel);
-
+            await GetAuthToken();
             var jsonContent = new StringContent(
                 JsonConvert.SerializeObject(sale), Encoding.UTF8, "application/json");
             var json = JsonConvert.SerializeObject(sale);
@@ -58,7 +61,7 @@ namespace InventoryUi.Services
         public async Task<bool> UpdateSaleAsync(SalesModel saleModel)
         {
             Sales sale = ToApiModel(saleModel);
-
+            await GetAuthToken();
             var jsonContent = new StringContent(
                 JsonConvert.SerializeObject(sale), Encoding.UTF8, "application/json");
             var json = JsonConvert.SerializeObject(sale);
@@ -68,6 +71,7 @@ namespace InventoryUi.Services
         }
         public async Task<bool> DeleteSaleAsync(long saleId)
         {
+            await GetAuthToken();
             string url = $"api/Sales/DeleteSale/{saleId}";
 
             var response = await _httpClient.DeleteAsync(url);
@@ -90,6 +94,15 @@ namespace InventoryUi.Services
             sale.CreatedDate = saleModel.CreatedDate;
             sale.ModifiedDate = DateTime.Now;
             return sale;
+        }
+        private async Task GetAuthToken()
+        {
+            var token = await _authToken.GetAuthTokenAsync();
+            AuthorizationTokenResponse oAuthorizationTokenResponse = JsonConvert.DeserializeObject<AuthorizationTokenResponse>(token);
+            if (!string.IsNullOrEmpty(oAuthorizationTokenResponse.token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", oAuthorizationTokenResponse.token);
+            }
         }
     }
 }

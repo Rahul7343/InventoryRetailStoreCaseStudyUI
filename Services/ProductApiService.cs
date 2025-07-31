@@ -12,14 +12,16 @@ namespace InventoryUi.Services
     public class ProductApiService
     {
         private readonly HttpClient _httpClient;
-
-        public ProductApiService(IHttpClientFactory httpClientFactory)
+        private readonly AuthApiService _authToken;
+        public ProductApiService(IHttpClientFactory httpClientFactory, AuthApiService authToken)
         {
             _httpClient = httpClientFactory.CreateClient("Inventory");
+            _authToken = authToken;
         }
 
         public async Task<List<ProductModel>> GetAllProductsAsync()
         {
+            await GetAuthToken();
             var response = await _httpClient.GetAsync("api/Product/GetProducts");
 
             if (response.IsSuccessStatusCode)
@@ -32,6 +34,7 @@ namespace InventoryUi.Services
         }
         public async Task<ProductModel> GetProductAsync(long productId)
         {
+            await GetAuthToken();
             string url = $"api/Product/GetProduct/{productId}";
 
             var response = await _httpClient.GetAsync(url);
@@ -46,6 +49,7 @@ namespace InventoryUi.Services
 
         public async Task<bool> AddProductAsync(ProductModel productModel)
         {
+            await GetAuthToken();
             Product product = ToApiModel(productModel);
 
             var jsonContent = new StringContent(
@@ -58,7 +62,7 @@ namespace InventoryUi.Services
         public async Task<bool> UpdateProductAsync(ProductModel productModel)
         {
             Product product = ToApiModel(productModel);
-
+            await GetAuthToken();
             var jsonContent = new StringContent(
                 JsonConvert.SerializeObject(product), Encoding.UTF8, "application/json");
             var json = JsonConvert.SerializeObject(product);
@@ -68,6 +72,7 @@ namespace InventoryUi.Services
         }
         public async Task<bool> DeleteProductAsync(long productId)
         {
+            await GetAuthToken();
             string url = $"api/Product/DeleteProduct/{productId}";
 
             var response = await _httpClient.DeleteAsync(url);
@@ -93,6 +98,7 @@ namespace InventoryUi.Services
         }
         public async Task<List<CategoryModel>> GetAllCategoriesAsync()
         {
+            await GetAuthToken();
             var response = await _httpClient.GetAsync("api/Category/GetCategories");
 
             if (response.IsSuccessStatusCode)
@@ -103,6 +109,14 @@ namespace InventoryUi.Services
 
             return new List<CategoryModel>();
         }
-
+        private async Task GetAuthToken()
+        {
+            var token = await _authToken.GetAuthTokenAsync();
+            AuthorizationTokenResponse oAuthorizationTokenResponse = JsonConvert.DeserializeObject<AuthorizationTokenResponse>(token);
+            if (!string.IsNullOrEmpty(oAuthorizationTokenResponse.token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", oAuthorizationTokenResponse.token);
+            }
+        }
     }
 }
